@@ -42,7 +42,11 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
+<<<<<<< HEAD
         image: us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.2
+=======
+        image: gcr.io/google-samples/microservices-demo/shippingservice:v0.10.1
+>>>>>>> 39efed43 (Release v0.10.1)
         ports:
         - containerPort: 50051
         env:
