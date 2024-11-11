@@ -51,7 +51,7 @@ jobs:
 
       - name: build cartservice image
         run: |
-          docker build -t maryjane001/cartservice:latest -f ./src/cartservice/Dockerfile ./src/cartservice
+          docker build -t maryjane001/cartservice:latest -f ./src/cartservice/src/Dockerfile ./src/cartservice
           docker push maryjane001/cartservice:latest
 
       - name: scan cartversive image 
