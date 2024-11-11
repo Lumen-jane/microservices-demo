@@ -65,7 +65,7 @@ jobs:
     # build, scan and push checkoutservices
       - name: build checkoutservices image
         run: |
-          docker build -t maryjane001/checkoutservice:latest -f ./src/checkoutservice/Dockerfile ./src/checkoutservice/Dockerfile
+          docker build -t maryjane001/checkoutservice:latest -f ./src/checkoutservice/Dockerfile ./src/checkoutservice
           docker push maryjane001/checkoutservice:latest
 
       - name: scan checkoutservice image 
@@ -79,7 +79,7 @@ jobs:
       # build, scan and push currency service
       - name: build currencyservice image
         run: |
-          docker build -t maryjane001/currencyservice:latest -f ./src/currencyservice/Dockerfile ./src/currencyservice/Dockerfile
+          docker build -t maryjane001/currencyservice:latest -f ./src/currencyservice/Dockerfile ./src/currencyservice
           docker push maryjane001/currencyservice:latest
 
       - name: scan currencyservice image 
@@ -93,7 +93,7 @@ jobs:
       # build, scan and push emailservice
       - name: build emailservice image
         run: |
-          docker build -t maryjane001/emailservice:latest -f ./src/emailservice/Dockerfile ./src/emailservice/Dockerfile
+          docker build -t maryjane001/emailservice:latest -f ./src/emailservice/Dockerfile ./src/emailservice
           docker push maryjane001/emailservice:latest
 
       - name: scan emailservice image 
@@ -107,7 +107,7 @@ jobs:
       # build, scan and push frontendservice
       - name: build frontendservice image
         run: |
-          docker build -t maryjane001/frontendservice:latest -f ./src/frontendservice/Dockerfile ./src/frontendservice/Dockerfile
+          docker build -t maryjane001/frontendservice:latest -f ./src/frontendservice/Dockerfile ./src/frontendservice
           docker push maryjane001/frontendservice:latest
 
       - name: scan frontendservice image 
@@ -121,7 +121,7 @@ jobs:
       # build, scan and push loadgenerator service
       - name: build loadgenerator image
         run: |
-          docker build -t maryjane001/loadgenerator:latest -f ./src/loadgenerator/Dockerfile ./src/loadgenerator/Dockerfile
+          docker build -t maryjane001/loadgenerator:latest -f ./src/loadgenerator/Dockerfile ./src/loadgenerator
           docker push maryjane001/loadgenerator:latest
 
       - name: scan loadgenerator image 
