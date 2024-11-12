@@ -33,7 +33,7 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
           
       - name: Run Trivy scan on Docker image
-        run: trivy image --cache-dir /tmp/trivycache --scanners vuln --skip-update maryjane001/adservice:latest
+        run: trivy image --cache-dir /tmp/trivycache --scanners vuln --skip-db-update maryjane001/adservice:latest
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
