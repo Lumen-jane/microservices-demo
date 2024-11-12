@@ -41,7 +41,7 @@ jobs:
       # build, scan and push adservice
       - name: build adservice image
         run: |
-          docker build -t maryjane001/adservice:latest -f ./src/adservice/Dockerfile ./src/adservice
+          docker build -t maryjane001/adservice:latest -f ./src/adservice/Dockerfile ./src/adservice/src
           docker push maryjane001/adservice:latest
 
       - name: scan adservice image 
