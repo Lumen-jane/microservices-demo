@@ -34,6 +34,8 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Run Trivy scan on Docker image
+        env:
+          TRIVY_CACHE_DIR: /tmp/trivycache
         run: trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} --scanners vuln maryjane001/adservice:latest
 
       # build, scan and push adservice
