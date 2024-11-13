@@ -33,6 +33,13 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }}
 
+      - name: SonarQube Scan
+        working-directory: ./src/adservice
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_AUTH_TOKEN: ${{ secrets.SONAR_AUTH_TOKEN }}
+        run: ./gradlew sonarqube
+
   build-and-publish:
     name: Build and Publish Docker Image
     needs: sonarqube
