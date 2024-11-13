@@ -1,4 +1,4 @@
-name: # Action for adservice
+name: # Action for adservice 
 
 on:
     workflow_dispatch: 
@@ -43,7 +43,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ${{ env.SERVICE_PATH }}
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            -f ${{ env.SERVICE_PATH }}/Dockerfile ${{ env.SERVICE_PATH }}
 
       - name: Trivy Security Scan
         env:
@@ -71,29 +72,3 @@ jobs:
           docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:latest
-
-      - name: Clean up Workspace
-        if: always()
-        run: |
-          rm -rf ${{ env.SERVICE_PATH }}y for security scanning
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Run Trivy scan on Docker image
-        env:
-          TRIVY_CACHE_DIR: /tmp/trivycache
-        run: trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} --scanners vuln maryjane001/adservice:latest
-
-      # build, scan and push adservice
-      - name: build adservice image
-        run: |
-          docker build -t maryjane001/adservice:latest -f ./src/adservice/Dockerfile ./src/adservice/
-          docker push maryjane001/adservice:latest
-
-      - name: scan adservice image
-        run: |
-          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/adservice:latest
-
-      - name: Push adservice image
-        run: |
-          docker push maryjane001/adservice:latest
