@@ -1,0 +1,137 @@
+name: Build and Deploy Microservices
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      TRIVY_CACHE_DIR: /tmp/trivycache
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ env.DOCKER_HUB_PASSWORD }}
+
+      - name: Install Trivy for security scanning
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run Trivy scan on Docker image
+        env:
+          TRIVY_CACHE_DIR: /tmp/trivycache
+        run: trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} --scanners vuln maryjane001/adservice:latest
+
+      # build, scan and push adservice
+      - name: build adservice image
+        run: |
+          docker build -t maryjane001/adservice:latest -f ./src/adservice/Dockerfile ./src/adservice/src
+          docker push maryjane001/adservice:latest
+
+      - name: scan adservice image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/adservice:latest
+
+      - name: Push adservice image
+        run: |
+          docker push maryjane001/adservice:latest
+
+      # build, scan and push cartservice
+      - name: build cartservice image
+        run: |
+          docker build -t maryjane001/cartservice:latest -f ./src/cartservice/src/Dockerfile ./src/cartservice
+          docker push maryjane001/cartservice:latest
+
+      - name: scan cartservice image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/cartservice:latest
+
+      - name: Push cartservice image
+        run: |
+          docker push maryjane001/cartservice:latest
+
+      # build, scan and push checkoutservices
+      - name: build checkoutservices image
+        run: |
+          docker build -t maryjane001/checkoutservice:latest -f ./src/checkoutservice/Dockerfile ./src/checkoutservice
+          docker push maryjane001/checkoutservice:latest
+
+      - name: scan checkoutservice image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/checkoutservice:latest
+
+      - name: Push checkoutservice image
+        run: |
+          docker push maryjane001/checkoutservice:latest
+
+      # build, scan and push currency service
+      - name: build currencyservice image
+        run: |
+          docker build -t maryjane001/currencyservice:latest -f ./src/currencyservice/Dockerfile ./src/currencyservice
+          docker push maryjane001/currencyservice:latest
+
+      - name: scan currencyservice image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/currencyservice:latest
+
+      - name: Push currencyservice image
+        run: |
+          docker push maryjane001/currencyservice:latest
+
+      # build, scan and push emailservice
+      - name: build emailservice image
+        run: |
+          docker build -t maryjane001/emailservice:latest -f ./src/emailservice/Dockerfile ./src/emailservice
+          docker push maryjane001/emailservice:latest
+
+      - name: scan emailservice image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/emailservice:latest
+
+      - name: Push emailservice image
+        run: |
+          docker push maryjane001/emailservice:latest
+
+      # build, scan and push frontendservice
+      - name: build frontendservice image
+        run: |
+          docker build -t maryjane001/frontendservice:latest -f ./src/frontendservice/Dockerfile ./src/frontendservice
+          docker push maryjane001/frontendservice:latest
+
+      - name: scan frontendservice image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/frontendservice:latest
+
+      - name: Push frontendservice image
+        run: |
+          docker push maryjane001/frontendservice:latest
+
+      # build, scan and push loadgenerator service
+      - name: build loadgenerator image
+        run: |
+          docker build -t maryjane001/loadgenerator:latest -f ./src/loadgenerator/Dockerfile ./src/loadgenerator
+          docker push maryjane001/loadgenerator:latest
+
+      - name: scan loadgenerator image
+        run: |
+          trivy image --cache-dir ${{ env.TRIVY_CACHE_DIR }} maryjane001/loadgenerator:latest
+
+      - name: Push loadgenerator image
+        run: |
+          docker push maryjane001/loadgenerator:latest
