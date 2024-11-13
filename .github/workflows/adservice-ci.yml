@@ -1,8 +1,14 @@
-name: Adservice CI
-
+name: CI for AdService
 on:
-    workflow_dispatch: 
-
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+concurrency:
+  group: adservice-ci
+  cancel-in-progress: true
 jobs:
   sonarqube:
     name: SonarQube Scan
@@ -12,13 +18,11 @@ jobs:
       SERVICE_PATH: "./src/adservice"
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up JDK 19
         uses: actions/setup-java@v3
         with:
           java-version: '19'
           distribution: 'temurin'
-
       - name: SonarQube Scan
         working-directory: ${{ env.SERVICE_PATH }}
         run: |
@@ -40,39 +44,44 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
+          
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ${{ env.SERVICE_PATH }}
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            -f ${{ env.SERVICE_PATH }}/Dockerfile ${{ env.SERVICE_PATH }}
 
-      - name: Trivy Security Scan
+      - name: Set up Trivy Cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/trivycache
+          key: ${{ runner.os }}-trivy-db-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-trivy-db-
+          
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+          cache-dir: /tmp/trivycache
+          skip-dirs: "/usr/local/lib/node_modules"
         env:
-          TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db"
-          TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db"
-        run: |
-          docker pull public.ecr.aws/aquasecurity/trivy:latest
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -e TRIVY_DB_REPOSITORY="${{ env.TRIVY_DB_REPOSITORY }}" \
-            -e TRIVY_JAVA_DB_REPOSITORY="${{ env.TRIVY_JAVA_DB_REPOSITORY }}" \
-            public.ecr.aws/aquasecurity/trivy:latest image \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
-            --severity HIGH,CRITICAL
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
+          
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:latest
-
-      - name: Clean up Workspace
-        if: always()
-        run: |
-          rm -rf ${{ env.SERVICE_PATH }}
