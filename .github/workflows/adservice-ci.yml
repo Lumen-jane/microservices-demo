@@ -1,4 +1,4 @@
-name: ci for adservices
+name: CI for AdService
 
 on:
   push:
@@ -58,6 +58,12 @@ jobs:
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             -f ${{ env.SERVICE_PATH }}/Dockerfile ${{ env.SERVICE_PATH }}
 
+      - name: Set up Trivy Cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/trivycache
+          key: ${{ runner.os }}-trivy-db-${{ github.sha }}
+          
       - name: Trivy Security Scan
         env:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db"
@@ -66,6 +72,7 @@ jobs:
           docker pull public.ecr.aws/aquasecurity/trivy:latest
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /tmp/trivycache:/root/.cache/trivy \
             -e TRIVY_DB_REPOSITORY="${{ env.TRIVY_DB_REPOSITORY }}" \
             -e TRIVY_JAVA_DB_REPOSITORY="${{ env.TRIVY_JAVA_DB_REPOSITORY }}" \
             public.ecr.aws/aquasecurity/trivy:latest image \
