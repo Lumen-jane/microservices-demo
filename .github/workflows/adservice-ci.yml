@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: adservice-ci
+  cancel-in-progress: true
+
 jobs:
   sonarqube:
     name: SonarQube Scan
